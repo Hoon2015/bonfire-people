@@ -1,0 +1,245 @@
+<title>모닥불 사람들</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* 밤의 계곡 하나: 화면 전체가 지도, 사람 손에 닿는 것만 가장자리에 */
+:root {
+  --night: #15110E; --panel: #1E1915; --panel2: #2A231D; --line: #3E3329;
+  --text: #F3E9D7; --muted: #CFC4B2; --dim: #9C8F7E;
+  --ember: #E2771F; --glow: #F4B266; --gold: #FFD9A0; --danger: #E0605A; --sky: #8FA3C8;
+  --display: 'Gowun Batang', 'Nanum Myeongjo', serif;
+  --body: 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--night); color: var(--text); font-family: var(--body); overflow: hidden; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+button { font-family: var(--body); color: inherit; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+#app { position: relative; height: 100%; overflow: hidden; }
+#cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+/* 위 */
+.top { position: absolute; left: 0; right: 0; top: 0; padding: calc(env(safe-area-inset-top, 0px) + 10px) max(12px, env(safe-area-inset-right, 0px)) 0 max(12px, env(safe-area-inset-left, 0px)); display: flex; gap: 10px; align-items: flex-start; pointer-events: none; }
+.me { display: flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px; border-radius: 30px; background: rgba(21,17,14,0.78); border: 1px solid var(--line); pointer-events: auto; }
+.me .fc { width: 52px; height: 52px; border-radius: 26px; overflow: hidden; background: var(--panel2); display: flex; align-items: flex-end; justify-content: center; }
+.me b { display: block; font-size: 13px; }
+.me small { display: block; font-size: 12px; color: var(--gold); }
+.status { flex: 1 1 auto; max-width: 420px; display: flex; flex-direction: column; gap: 6px; padding: 8px 12px; border-radius: 16px; background: rgba(21,17,14,0.78); border: 1px solid var(--line); }
+.status .day { font-family: var(--display); font-size: 15px; }
+.track { position: relative; height: 6px; border-radius: 3px; background: var(--line); }
+.track .sun { position: absolute; top: -3px; width: 12px; height: 12px; margin-left: -6px; border-radius: 6px; background: var(--gold); box-shadow: 0 0 8px var(--glow); }
+.meters { display: grid; grid-template-columns: auto 1fr; gap: 4px 8px; align-items: center; font-size: 11px; color: var(--muted); }
+.bar { position: relative; height: 7px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--ember); transition: width 0.4s; }
+.bar .mark { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--text); opacity: 0.7; }
+#foodbar { background: #C0503A; }
+.devbtn { pointer-events: auto; width: 40px; height: 40px; border-radius: 20px; border: 1px solid var(--line); background: rgba(21,17,14,0.78); display: flex; align-items: center; justify-content: center; }
+.learn { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 112px); left: max(12px, env(safe-area-inset-left, 0px)); padding: 5px 12px; border-radius: 12px; background: rgba(244,178,102,0.18); border: 1px solid var(--glow); color: var(--gold); font-size: 12px; font-weight: 700; }
+
+/* 아래 */
+.bottom { position: absolute; left: 0; right: 0; bottom: 0; padding: 0 max(12px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 12px) max(12px, env(safe-area-inset-left, 0px)); display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; pointer-events: none; }
+.inv { display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 20px; background: rgba(21,17,14,0.8); border: 1px solid var(--line); pointer-events: auto; }
+.slot { width: 34px; height: 34px; border-radius: 10px; background: var(--panel2); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; }
+.slot.hand { width: 42px; height: 42px; border-radius: 21px; border-color: #5A4A3A; }
+.slotgap { width: 4px; height: 26px; border-left: 1px dashed var(--line); }
+.acts { display: flex; gap: 8px; pointer-events: auto; }
+.act { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 62px; height: 62px; border-radius: 31px; border: 1px solid var(--line); background: rgba(30,25,21,0.92); font-size: 11px; }
+.act.glow { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(255,217,160,0.25); }
+
+/* 힌트 */
+.hint { position: absolute; left: 0; top: 0; width: 0; height: 0; pointer-events: none; z-index: 4; }
+.hint::before { content: ""; position: absolute; left: -16px; top: -46px; width: 32px; height: 32px; background: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 11V4.5a1.5 1.5 0 0 1 3 0V11m0-1.5a1.5 1.5 0 0 1 3 0V11m0-.5a1.5 1.5 0 0 1 3 0V14a6 6 0 0 1-6 6h-1.5a5 5 0 0 1-4-2l-3-4a1.5 1.5 0 0 1 2.3-1.9L9 13.5' fill='%23F3E9D7' stroke='%232A231C' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E"); animation: tapbob 0.9s ease-in-out infinite; }
+.hint.hold::after { content: ""; position: absolute; left: -22px; top: -22px; width: 44px; height: 44px; border-radius: 22px; border: 3px solid var(--gold); animation: holdring 1.2s linear infinite; }
+@keyframes tapbob { 50% { transform: translateY(6px); } }
+@keyframes holdring { from { transform: scale(0.5); opacity: 1; } to { transform: scale(1.3); opacity: 0; } }
+.lpress { position: absolute; width: 0; height: 0; pointer-events: none; z-index: 6; }
+.lpress::after { content: ""; position: absolute; left: -26px; top: -26px; width: 52px; height: 52px; border-radius: 26px; border: 3px solid var(--gold); opacity: 0; }
+.lpress.run::after { animation: lp 0.32s linear forwards; }
+@keyframes lp { from { transform: scale(1.4); opacity: 0.2; } to { transform: scale(0.7); opacity: 1; } }
+
+/* 컷인 */
+.cutin { position: absolute; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 92px); transform: translateX(-50%); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: calc(100% - 32px); padding: 10px 14px; border-radius: 20px; background: rgba(21,17,14,0.92); border: 1px solid var(--glow); z-index: 5; pointer-events: none; }
+.cutin.show { animation: cin 0.35s ease-out; }
+@keyframes cin { from { transform: translate(-50%, -12px); opacity: 0; } }
+.cface { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.cface svg { border-radius: 46px; background: var(--panel2); }
+.cface span { font-size: 12px; color: var(--muted); }
+.cface.me span { color: var(--gold); }
+.carrow { color: var(--glow); }
+.clabel { flex-basis: 100%; margin: 0; text-align: center; font-family: var(--display); font-size: 15px; color: var(--gold); }
+
+/* 몸짓 바퀴 */
+.wheel { position: absolute; width: 0; height: 0; z-index: 7; }
+.whead { position: absolute; left: -40px; top: -12px; width: 80px; text-align: center; font-family: var(--display); font-size: 15px; text-shadow: 0 1px 4px #000; pointer-events: none; }
+.wbtn { position: absolute; left: -31px; top: -31px; width: 62px; height: 62px; border-radius: 31px; border: 1px solid var(--line); background: rgba(30,25,21,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font-size: 10.5px; color: var(--text); }
+.wbtn:hover { border-color: var(--gold); }
+.wbtn.locked { opacity: 0.35; }
+
+/* 그림말 판, 목소리 */
+.sheet { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 86px); transform: translateX(-50%); width: min(560px, calc(100% - 24px)); max-height: 60%; overflow: auto; padding: 14px; border-radius: 20px; background: rgba(21,17,14,0.96); border: 1px solid var(--line); z-index: 6; display: flex; flex-direction: column; gap: 12px; }
+.shead { display: flex; align-items: center; gap: 10px; }
+.compose { display: flex; align-items: center; gap: 6px; flex: 1 1 auto; }
+.cslot { width: 44px; height: 44px; border-radius: 12px; border: 1px dashed var(--line); display: flex; align-items: center; justify-content: center; color: var(--text); }
+.plus { color: var(--dim); }
+.sbtn { padding: 10px 16px; border-radius: 12px; border: 1px solid var(--glow); background: rgba(244,178,102,0.16); color: var(--gold); font-weight: 700; }
+.sbtn:disabled { opacity: 0.4; }
+.ghost { padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: none; color: var(--muted); }
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 6px; }
+.pk { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 2px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); font-size: 11px; color: var(--text); }
+.pk:active { background: var(--panel2); }
+.pstage { font-size: 11px; color: var(--dim); }
+.voices { position: absolute; right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 86px); display: grid; grid-template-columns: repeat(3, 64px); gap: 6px; padding: 10px; border-radius: 18px; background: rgba(21,17,14,0.96); border: 1px solid var(--line); z-index: 6; }
+.vk { height: 60px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 11px; touch-action: none; }
+.vk.down { border-color: var(--gold); background: rgba(244,178,102,0.16); }
+.vnote { grid-column: 1 / -1; margin: 0; font-size: 10.5px; color: var(--dim); text-align: center; }
+
+/* 동의 */
+.consent { position: absolute; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 90px); transform: translateX(-50%); width: min(340px, calc(100% - 32px)); padding: 14px; border-radius: 20px; background: rgba(21,17,14,0.96); border: 1px solid var(--glow); z-index: 8; display: flex; flex-direction: column; gap: 10px; }
+.crow { display: flex; align-items: center; gap: 10px; }
+.crow .f { width: 64px; height: 64px; border-radius: 32px; overflow: hidden; background: var(--panel2); flex: 0 0 auto; }
+.crow p { margin: 0; font-size: 14px; }
+.cbtns { display: flex; gap: 8px; }
+.cbtns button { flex: 1 1 0; }
+.ctimer { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.ctimer i { display: block; height: 100%; background: var(--glow); }
+
+/* 노래 */
+.song { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px max(16px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 16px) max(16px, env(safe-area-inset-left, 0px)); background: linear-gradient(0deg, rgba(14,10,8,0.97) 70%, rgba(14,10,8,0)); z-index: 7; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.song h2 { margin: 0; font-family: var(--display); font-size: 20px; }
+.srows { width: min(560px, 100%); display: flex; flex-direction: column; gap: 4px; }
+.srow { display: grid; grid-template-columns: 40px 1fr; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); }
+.dots { display: flex; justify-content: space-between; height: 14px; align-items: center; }
+.d { width: 8px; height: 8px; border-radius: 4px; background: var(--line); transform: translateX(var(--o)); }
+.d.ok { background: var(--gold); box-shadow: 0 0 6px var(--glow); }
+.d.off { background: #8A7A66; }
+.sprogress { width: min(560px, 100%); height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.sprogress i { display: block; height: 100%; background: var(--ember); }
+.tapwrap { position: relative; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; }
+.sring { position: absolute; inset: 6px; pointer-events: none; border-radius: 60px; border: 3px solid var(--glow); opacity: 0.8; }
+.stap { width: 92px; height: 92px; border-radius: 46px; border: none; background: radial-gradient(circle at 40% 35%, #C88A5A, #7A4A2A); color: #1C130E; font-weight: 700; font-size: 14px; touch-action: none; }
+.stap.hit { animation: thump 0.18s ease-out; }
+@keyframes thump { 50% { transform: scale(0.92); } }
+.srowbtn { display: flex; gap: 8px; }
+
+/* 밤 카드, 끝, 시작 */
+.card { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(420px, calc(100% - 32px)); max-height: calc(100% - 40px); overflow: auto; padding: 20px; border-radius: 22px; background: rgba(21,17,14,0.97); border: 1px solid var(--line); z-index: 9; display: flex; flex-direction: column; gap: 14px; }
+.card h2 { margin: 0; font-family: var(--display); font-size: 24px; text-wrap: balance; }
+.card ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.card li { display: grid; grid-template-columns: 70px 1fr; gap: 10px; font-size: 14px; line-height: 1.5; }
+.card li b { color: var(--gold); font-weight: 700; }
+.card li span { color: var(--muted); }
+.start { position: absolute; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; padding: 16px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px)); background: radial-gradient(ellipse at 50% 70%, rgba(226,119,31,0.28), rgba(14,10,8,0.92) 60%); }
+.start .inner { max-width: 440px; display: flex; flex-direction: column; gap: 16px; }
+.start h1 { margin: 0; font-family: var(--display); font-size: clamp(34px, 9vw, 52px); line-height: 1.1; }
+.start p { margin: 0; font-size: 15px; line-height: 1.7; color: var(--muted); }
+.start dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 13px; }
+.start dt { color: var(--gold); font-weight: 700; }
+.start dd { margin: 0; color: var(--muted); }
+.big { align-self: flex-start; padding: 14px 26px; border-radius: 16px; border: none; background: var(--glow); color: #1C130E; font-size: 16px; font-weight: 700; }
+.rels { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; }
+.rel { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; }
+.rel svg { border-radius: 32px; background: var(--panel2); }
+.rel i { display: block; width: 64px; height: 5px; border-radius: 3px; background: linear-gradient(90deg, var(--glow) var(--w), var(--line) var(--w)); }
+.estats li { grid-template-columns: 1fr auto; }
+.estats li b { color: var(--text); }
+
+/* 기획자 */
+.dev { position: absolute; right: max(12px, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 60px); width: 250px; padding: 12px; border-radius: 16px; background: rgba(21,17,14,0.96); border: 1px solid var(--line); z-index: 8; display: flex; flex-direction: column; gap: 10px; font-size: 12px; }
+.dev h3 { margin: 0; font-size: 13px; }
+.seg { display: flex; gap: 4px; }
+.seg button { flex: 1 1 0; padding: 6px 0; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); font-size: 12px; }
+.seg button[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); }
+.dev label { display: flex; align-items: center; gap: 8px; }
+.devnums { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.fade { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity 0.9s; z-index: 9; }
+.fade.on { opacity: 1; }
+@media (max-width: 520px) {
+  .status { max-width: none; }
+  .me small { display: none; }
+  .act { width: 54px; height: 54px; }
+  .slot { width: 28px; height: 28px; }
+  .slot.hand { width: 36px; height: 36px; }
+}
+@media (prefers-reduced-motion: reduce) { .hint::before, .hint.hold::after, .cutin.show { animation: none; } }
+</style>
+<div id="app">
+  <canvas id="cv" aria-label="모닥불 사람들 게임 화면"></canvas>
+  <div class="top">
+    <div class="me"><div class="fc" id="myface"></div><div><b>가람</b><small id="mylabel"></small></div></div>
+    <div class="status">
+      <div class="day" id="dayname">가을 · 첫날 · 새벽</div>
+      <div class="track" aria-hidden="true"><span class="sun" id="sunpos"></span></div>
+      <div class="meters">
+        <span>불</span><div class="bar"><i id="fuelbar"></i></div>
+        <span>먹을 것</span><div class="bar"><i id="foodbar"></i><span class="mark" id="foodmark" title="오늘 밤 필요한 양"></span></div>
+      </div>
+    </div>
+    <button class="devbtn" id="devbtn" aria-label="기획자 도구"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8M14 4v6M8 14v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="learn" id="learn" hidden>배우는 중 · 손이 빨라진다</div>
+  <div class="bottom">
+    <div class="inv" id="inv" aria-label="양손과 가죽 주머니"></div>
+    <div class="acts">
+      <button class="act" id="picbtn" aria-label="그림말"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M8 10h.01M12 10h.01M16 10h.01" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>그림말</button>
+      <button class="act" id="voicebtn" aria-label="목소리"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l5 4V6L7 10zM15 9a4 4 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>목소리</button>
+    </div>
+  </div>
+  <div class="hint" id="hint" hidden></div>
+  <div class="lpress" id="lpress" hidden></div>
+  <div class="cutin" id="cutin" hidden></div>
+  <div class="wheel" id="wheel" hidden></div>
+  <div class="sheet" id="picto" hidden>
+    <div class="shead"><div class="compose" id="compose"></div><button class="ghost" id="pclear">지우기</button><button class="sbtn" id="psend">보내기</button></div>
+    <div class="pstage" id="pstage"></div>
+    <div class="pgrid" id="pgrid"></div>
+  </div>
+  <div class="voices" id="voices" hidden></div>
+  <div class="consent" id="consent" hidden>
+    <div class="crow"><div class="f" id="cface"></div><p id="cwho"></p></div>
+    <div class="cbtns"><button class="sbtn" id="cyes">받기</button><button class="ghost" id="cno">괜찮아</button></div>
+    <div class="ctimer"><i id="cbar"></i></div>
+  </div>
+  <div class="song" id="song" hidden>
+    <h2 id="stitle">밤 모닥불 노래</h2>
+    <div class="srows" id="srows"></div>
+    <div class="sprogress"><i id="sprog"></i></div>
+    <div class="tapwrap"><span class="sring" id="sring"></span><button class="sbtn" id="sstart">함께 부르기</button><button class="stap" id="stap" hidden>둥</button></div>
+    <div class="srowbtn"><button class="ghost" id="sskip">앉아서 듣기</button></div>
+  </div>
+  <div class="card" id="night" hidden>
+    <h2 id="ntitle">밤</h2>
+    <ul id="nlist"></ul>
+    <button class="big" id="nnext">잠들기</button>
+  </div>
+  <div class="card" id="end" hidden>
+    <h2 id="etitle">첫 겨울을 함께 넘겼다</h2>
+    <div class="rels" id="erel"></div>
+    <ul class="estats" id="estats"></ul>
+    <button class="big" id="again">새 아이로 다시 태어나기</button>
+  </div>
+  <div class="dev" id="dev" hidden>
+    <h3>기획자 도구</h3>
+    <div class="seg"><button data-speed="1" aria-pressed="true">1배</button><button data-speed="2" aria-pressed="false">2배</button><button data-speed="4" aria-pressed="false">4배</button></div>
+    <label><input type="checkbox" id="devview"> 숨은 값 보기 (신뢰, 감정)</label>
+    <label><input type="checkbox" id="devsound" checked> 소리</label>
+    <button class="ghost" id="devskip">다음 단계로 건너뛰기</button>
+    <div class="devnums" id="devnums" hidden><span id="dev-food"></span><span id="dev-fire"></span><span id="dev-misc"></span></div>
+  </div>
+  <div class="fade" id="fade"></div>
+  <div class="start" id="start">
+    <div class="inner">
+      <h1>모닥불 사람들</h1>
+      <p>빙하기 끝자락, 한 무리의 아이로 눈을 뜬다. 말은 없다. 얼굴과 몸짓, 소리와 그림말로 무리와 함께 가을과 첫 겨울, 이레를 넘긴다.</p>
+      <dl>
+        <dt>탭</dt><dd>가고 싶은 곳, 하고 싶은 것</dd>
+        <dt>길게 누르기</dt><dd>사람에게는 몸짓 바퀴, 땅과 짐승에게는 가리키기</dd>
+        <dt>밤</dt><dd>북을 두드려 함께 노래하면 불이 커진다</dd>
+      </dl>
+      <button class="big" id="startbtn">눈을 뜨다</button>
+    </div>
+  </div>
+</div>
+<script>
+/*__SCRIPTS__*/
+</script>
